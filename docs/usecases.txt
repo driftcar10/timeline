@@ -1,0 +1,22 @@
+@startuml
+left to right direction
+actor User as u
+package Timeline {
+  usecase "Register" as UC1
+  usecase "Login/logout" as UC2
+  usecase "Event CRUD" as UC3
+  usecase "View Timeline" as UC4
+  usecase "create/delete tag" as UC5
+  usecase "add/remove tag to event" as UC6
+  usecase "view timeline using set of tags" as UC7
+  usecase "change password" as UC8
+}
+u --> UC1
+u --> UC2
+u --> UC3
+u --> UC4
+u --> UC5
+u --> UC6
+u --> UC7
+u --> UC8
+@enduml
