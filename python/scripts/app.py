@@ -5,6 +5,6 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return 'Web App with Python Flask!'
+    return 'Web App with Python Flask! And hello from Lev! From container!'
 
 app.run(host='0.0.0.0', port=5000)

@@ -8,6 +8,8 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      FLASK_APP: app.py
+      FLASK_ENV: development
     ports:
       - 5000:5000
     build:
@@ -45,7 +47,7 @@ services:
       PMA_ARBITRARY: 1
     restart: always
     ports:
-      - 8081:8081
+      - 8080:80
     networks:
       - mynetwork
 volumes:
