@@ -1,3 +1,17 @@
-<html>
-	Hello, This page is in indef
-</html>
+{% extends "template.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+<form action="/login" method="post">
+	<div>
+		<input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+	</div>
+	<div>
+		<input class="form-control" name="password" placeholder="Password" type="password">
+	</div>
+	<button type="submit">Log In</button>
+</form>
+{% endblock %}

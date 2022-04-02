@@ -13,7 +13,7 @@ def login():
 #    session.clear()
 
     if request.method == 'POST':
-        pass
+        return render_template('indev.html')
     else:
         return render_template('login.html')
 
