@@ -1,0 +1,14 @@
+main
+{
+    /* Scroll horizontally */
+    overflow-x: auto;
+
+    /* Center contents */
+    text-align: center;
+}
+
+img
+{
+    /* images on small screens */
+    max-width: 100%;
+}
