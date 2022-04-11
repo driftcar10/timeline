@@ -1,10 +1,17 @@
 print("Hello from Container!")
 from flask import Flask, redirect, render_template, request, session
 from helpers import login_required, apology
+from flask_session import Session
+from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 import mariadb
 import os
 app = Flask(__name__)
+
+app.config["SESSION_FILE_DIR"] = mkdtemp()
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 user = os.environ.get('MYSQL_USER')
 password = os.environ.get('MYSQL_PASSWORD')
@@ -60,7 +67,23 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        return render_template('indev.html')
+        if not request.form.get("username"):
+            return apology("must provide username", 400)
+
+        if not request.form.get("email"):
+            return apology("must provide email", 400)
+
+        elif not request.form.get("password"):
+            return apology("must provide password", 400)
+
+        if request.form.get("password") != request.form.get("confirmation"):
+            return apology("passwords must match", 400)
+        password_hash = generate_password_hash(request.form.get("password"))
+        try:
+            cur.execute("INSERT INTO users (name, password_hash, mail) VALUES (?, ?, ?)", (request.form.get("username"), password_hash, request.form.get("email")))
+        except ValueError:
+            return apology(f"There's another guy with the same name: {request.form.get('username')}", 400)
+        return redirect("/login")
     else:
         return render_template('register.html')
 app.run(host='0.0.0.0', port=5000)
