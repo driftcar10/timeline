@@ -30,11 +30,24 @@ cur = conn.cursor()
 @app.route('/')
 @login_required
 def index():
-    return 'Web App with Python Flask! And hello from Lev! From container!'
+
+    cur.execute("SELECT day, month, year,description FROM events WHERE user_id = ?", (session['user_id'], ))
+    events = []
+    for i in cur:
+        event = {}
+        day, month, year, description = i
+        event['day'] = day
+        event['month'] = month
+        event['year'] = year
+        event['description'] = description
+        events.append(event)
+    
+    return render_template("index.html", T_events=events)
+#    return 'Web App with Python Flask! And hello from Lev! From container!'
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-#    session.clear()
+    session.clear()
 
     if request.method == 'POST':
         

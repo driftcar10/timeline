@@ -1,0 +1,33 @@
+{% extends "template.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block main %}
+<h2>Welcome to Timeline!</h2>
+<br>
+<br>
+    <table>
+        <thead>
+            <tr>
+                <th>day</th>
+                <th>month</th>
+                <th>year</th>
+                <th>discription</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in T_events %}
+            <tr>
+                    <td>{{event['day']}}</td>
+                    <td>{{event['month']}}</td>
+                    <td>{{event['year']}}</td>
+                    <td>{{event['description']}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <br>
+{% endblock %}
