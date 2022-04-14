@@ -99,4 +99,17 @@ def register():
         return redirect("/login")
     else:
         return render_template('register.html')
+
+    
+    @app.route('/add', methods=['GET', 'POST'])
+    @login_required
+    def add():
+        if request.method =='POST':
+            return render_template("indev.html")
+        else:
+            print('Im trying!')
+            return render_template("add.html")
+    @app.route('/about_us')
+    def about_us():
+        return render_template('about_us.html')
 app.run(host='0.0.0.0', port=5000)
