@@ -1,0 +1,25 @@
+{% extends "template.html" %}
+
+{% block title %}
+    Timeline: Add Event
+{% endblock %}
+
+{% block main %}
+<h3>Write day, month as numbers. Example day: 2 month: 12</h3>
+
+<form action="/add" method="post">
+	<div>
+		<input autocomplete="off" autofocus class="form-control" name="day" placeholder="day" type="number">
+	</div>
+	<div>
+		<input autocomplete="off" class="form-control" name="month" placeholder="month" type="number">
+	</div>
+	<div>
+		<input autocomplete="off" class="form-control" name="year" placeholder="year" type="number">
+	</div>
+    <div>
+		<input autocomplete="off" class="form-control" name="description" placeholder="what happened" type="password">
+	</div>
+	<button type="submit"> Add </button>
+</form>
+{% endblock %}
