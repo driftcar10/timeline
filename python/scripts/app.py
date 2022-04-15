@@ -93,7 +93,9 @@ def register():
             return apology("passwords must match", 400)
         password_hash = generate_password_hash(request.form.get("password"))
         try:
+            print(123)
             cur.execute("INSERT INTO users (name, password_hash, mail) VALUES (?, ?, ?)", (request.form.get("username"), password_hash, request.form.get("email")))
+            conn.commit()
         except ValueError:
             return apology(f"There's another guy with the same name: {request.form.get('username')}", 400)
         return redirect("/login")
@@ -101,15 +103,16 @@ def register():
         return render_template('register.html')
 
     
-    @app.route('/add', methods=['GET', 'POST'])
-    @login_required
-    def add():
-        if request.method =='POST':
-            return render_template("indev.html")
-        else:
-            print('Im trying!')
-            return render_template("add.html")
-    @app.route('/about_us')
-    def about_us():
-        return render_template('about_us.html')
+@app.route('/add', methods=['GET', 'POST'])
+@login_required
+def add():
+    if request.method =='POST':
+        return render_template("indev.html")
+    else:
+        return render_template("add.html")
+
+@app.route('/about_us', methods=['GET'])
+def about_us():
+    return render_template('about_us.html')
+
 app.run(host='0.0.0.0', port=5000)
