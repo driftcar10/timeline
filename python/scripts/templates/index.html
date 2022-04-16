@@ -11,18 +11,14 @@
     <table>
         <thead>
             <tr>
-                <th>day</th>
-                <th>month</th>
-                <th>year</th>
+                <th>date</th>
                 <th>discription</th>
             </tr>
         </thead>
         <tbody>
             {% for event in T_events %}
             <tr>
-                    <td>{{event['day']}}</td>
-                    <td>{{event['month']}}</td>
-                    <td>{{event['year']}}</td>
+                    <td>{{event['date']}}</td>
                     <td>{{event['description']}}</td>
             </tr>
             {% endfor %}

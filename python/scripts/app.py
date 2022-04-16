@@ -6,6 +6,7 @@ from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 import mariadb
 import os
+import datetime
 app = Flask(__name__)
 
 app.config["SESSION_FILE_DIR"] = mkdtemp()
@@ -27,18 +28,16 @@ conn = mariadb.connect(
 
 cur = conn.cursor()
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 @login_required
 def index():
 
-    cur.execute("SELECT day, month, year,description FROM events WHERE user_id = ?", (session['user_id'], ))
+    cur.execute("SELECT date, description FROM events WHERE user_id = ?", (session['user_id'], ))
     events = []
-    for i in cur:
+    for row in cur:
         event = {}
-        day, month, year, description = i
-        event['day'] = day
-        event['month'] = month
-        event['year'] = year
+        date, description = row
+        event['date'] = date
         event['description'] = description
         events.append(event)
     
@@ -107,7 +106,19 @@ def register():
 @login_required
 def add():
     if request.method =='POST':
-        return render_template("indev.html")
+        if not request.form.get("date"):
+            return apology("must provide date", 400)
+        
+        elif not request.form.get("description"):
+            return apology("must provide description", 400)
+        print(request.form.get("date"))
+        date = datetime.datetime.fromisoformat(request.form.get("date"))
+        cur.execute("INSERT INTO events (date, description, user_id) VALUES (?, ?, ?)", 
+            (request.form.get("date"),  
+            request.form.get("description"), 
+            session['user_id']))
+        conn.commit()
+        return redirect('/')
     else:
         return render_template("add.html")
 
