@@ -28,20 +28,22 @@ conn = mariadb.connect(
 
 cur = conn.cursor()
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-
-    cur.execute("SELECT date, description FROM events WHERE user_id = ?", (session['user_id'], ))
-    events = []
-    for row in cur:
-        event = {}
-        date, description = row
-        event['date'] = date
-        event['description'] = description
-        events.append(event)
-    
-    return render_template("index.html", T_events=events)
+    if request.method == 'POST':
+        return render_template('indev.html')
+    else:
+        cur.execute("SELECT date, description FROM events WHERE user_id = ? ORDER BY date", (session['user_id'], ))
+        events = []
+        for row in cur:
+            event = {}
+            date, description = row
+            event['date'] = date
+            event['description'] = description
+            events.append(event)
+        
+        return render_template("index.html", T_events=events)
 #    return 'Web App with Python Flask! And hello from Lev! From container!'
 
 @app.route('/login', methods=['GET', 'POST'])
