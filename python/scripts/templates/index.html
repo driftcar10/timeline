@@ -7,13 +7,17 @@
 {% block main %}
 <h2>Welcome to Timeline!</h2>
 <br>
-<select name="group_by">
-    <option value="none">None</option>
-    <option value="day">Group by day</option>
-    <option value="month">Group by month</option>
-    <option value="year">Group by year</option>
-</select>
-<button type="submit"> Group </button>
+<form action="/" method="post">
+    <select name="group_by">
+        <option value="none">None</option>
+        <option value="day">Group by day</option>
+        <option value="month">Group by month</option>
+        <option value="year">Group by year</option>
+    </select>
+    <button type="submit"> Group </button>
+</form>
+
+
 <br>
     <table>
         <thead>

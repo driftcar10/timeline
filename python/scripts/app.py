@@ -10,7 +10,7 @@ import datetime
 app = Flask(__name__)
 
 app.config["SESSION_FILE_DIR"] = mkdtemp()
-app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
@@ -32,7 +32,26 @@ cur = conn.cursor()
 @login_required
 def index():
     if request.method == 'POST':
-        return render_template('indev.html')
+        events = []
+        cur.execute("SELECT MIN(date) FROM events WHERE user_id = ?", (session['user_id'], ))
+        print(cur.rowcount,session['user_id'])
+        min_date = cur.fetchone()
+        if min_date:
+            min_date = min_date[0]
+            cur.execute("SELECT MAX(date) FROM events WHERE user_id = ?", (session['user_id'], ))
+            max_date = cur.fetchone()[0]
+            print('am i working')
+            # iterating over dates
+
+            start_date = min_date.date()
+            end_date = max_date.date()
+            delta = datetime.timedelta(days=1)
+
+            while start_date <= end_date:
+                print(start_date)
+                start_date += delta
+            
+        return render_template('index.html', T_events=events)
     else:
         cur.execute("SELECT date, description FROM events WHERE user_id = ? ORDER BY date", (session['user_id'], ))
         events = []
