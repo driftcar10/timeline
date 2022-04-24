@@ -1,3 +1,4 @@
+from crypt import methods
 import os
 import mariadb
 import datetime
@@ -33,88 +34,78 @@ cur = conn.cursor()
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    if request.method == 'POST':
-        cur.execute("SELECT MIN(date) FROM events WHERE user_id = ?",
-                    (session['user_id'], ))
-        print(cur.rowcount, session['user_id'])
-        min_date = cur.fetchone()
-        if min_date:
-            min_date = min_date[0]
-            cur.execute(
-                "SELECT MAX(date) FROM events WHERE user_id = ?", (session['user_id'], ))
-            max_date = cur.fetchone()[0]
-            print('am i working')
+    #if request.method == 'POST':
+    cur.execute("SELECT MIN(date) FROM events WHERE user_id = ?",
+                (session['user_id'], ))
+    print(cur.rowcount, session['user_id'])
+    min_date = cur.fetchone()[0]
+    print(min_date)
+    events = []
+    if min_date:
+        #min_date = min_date[0]
+        cur.execute(
+            "SELECT MAX(date) FROM events WHERE user_id = ?", (session['user_id'], ))
+        max_date = cur.fetchone()[0]
+        print('am i working')
 
-            # iterating over dates
+        # iterating over dates
 
-            #importing data from database
-            cur.execute(
-                "SELECT date, description FROM events WHERE user_id = ? ORDER BY date",
-                (session['user_id'], )
-            )
-            data = [d for d in cur]
-            data.reverse()
+        #importing data from database
+        cur.execute(
+            "SELECT date, description FROM events WHERE user_id = ? ORDER BY date",
+            (session['user_id'], )
+        )
+        data = [d for d in cur]
+        data.reverse()
 
-            #setting up date
-            current_date = min_date
-            end_date = max_date
-            delta = datetime.timedelta(days=1)
+        #setting up date
+        current_date = min_date
+        end_date = max_date
+        delta = datetime.timedelta(days=1)
 
-            #reading the dropdown
-            events = []
-            group_by = request.form.get("group_by")
-            current_period = {"date": current_date.strftime("%d/%m/%Y") if group_by == "day" else current_date.strftime(
-                "%Y/%m") if group_by == "month" else current_date.strftime("%Y"), "events": []}
+        #reading the dropdown
 
-            while current_date <= end_date:
+        group_by = "month" if request.method == "GET" else request.form.get("group_by")
+        current_period = {"date": current_date.strftime("%d/%m/%Y") if group_by == "day" else current_date.strftime(
+            "%Y/%m") if group_by == "month" else current_date.strftime("%Y"), "events": []}
 
-                next_date = current_date + delta
+        while current_date <= end_date:
 
-                while data and is_date_in_period(data[-1][0], current_date, group_by):
-                    event = data[-1][1]
-                    current_period["events"].append(event)
-                    data.pop()
+            next_date = current_date + delta
 
-                if group_by == 'day':
-                    if current_date.day < next_date.day:
+            while data and is_date_in_period(data[-1][0], current_date, group_by):
+                event = data[-1][1]
+                current_period["events"].append(event)
+                data.pop()
 
-                        events.append(current_period)
-                        current_period = {"date": next_date.strftime("%d/%m/%Y"), "events": []}
-                        print("new day")
+            if group_by == 'day':
+                if current_date.day < next_date.day:
 
-                if group_by == 'month':
-                    if current_date.month < next_date.month:
+                    events.append(current_period)
+                    current_period = {"date": next_date.strftime("%d/%m/%Y"), "events": []}
+                    print("new day")
 
-                        events.append(current_period)
-                        current_period = {
-                            "date": next_date.strftime("%Y/%m"), "events": []}
-                        print("new month")
+            if group_by == 'month':
+                if current_date.month < next_date.month:
 
-                if group_by == 'year':
-                    if current_date.year < next_date.year:
+                    events.append(current_period)
+                    current_period = {
+                        "date": next_date.strftime("%Y/%m"), "events": []}
+                    print("new month")
 
-                        events.append(current_period)
-                        current_period = {
-                            "date": next_date.strftime("%Y"), "events": []}
-                        print("new year")
+            if group_by == 'year':
+                if current_date.year < next_date.year:
 
-                current_date += delta
+                    events.append(current_period)
+                    current_period = {
+                        "date": next_date.strftime("%Y"), "events": []}
+                    print("new year")
+
+            current_date += delta
         events.append(current_period)
 
-        return render_template('index.html', T_events=events)
-    else:
-        cur.execute(
-            "SELECT date, description FROM events WHERE user_id = ? ORDER BY date", (session['user_id'], ))
-        events = []
-        for row in cur:
-            event = {}
-            date, description = row
-            event['date'] = date
-            event['description'] = description
-            events.append(event)
-
-        return render_template("index.html", T_events=events)
-#    return 'Web App with Python Flask! And hello from Lev! From container!'
+    return render_template('index.html', T_events=events)
+    
 
 
 @app.route('/login', methods=['GET', 'POST'])
