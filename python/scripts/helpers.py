@@ -1,5 +1,6 @@
 from flask import redirect, session, render_template
 from functools import wraps
+import datetime
 
 def apology(message, code=400):
     def escape(s):
@@ -17,3 +18,14 @@ def login_required(f):
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
+
+def is_date_in_period(event_date, current_date, period):
+    print(event_date, current_date, period)
+    if period == "day":
+        return event_date == current_date
+
+    if period == "month":
+        return event_date.year == current_date.year and event_date.month == current_date.month
+
+    else:
+        return event_date.year == current_date.year

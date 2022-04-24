@@ -4,7 +4,7 @@ import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
 from tempfile import mkdtemp
 from flask_session import Session
-from helpers import login_required, apology
+from helpers import login_required, apology, is_date_in_period
 from flask import Flask, redirect, render_template, request, session
 print("Hello from Container!")
 
@@ -47,23 +47,39 @@ def index():
 
             # iterating over dates
 
+            #importing data from database
+            cur.execute(
+                "SELECT date, description FROM events WHERE user_id = ? ORDER BY date",
+                (session['user_id'], )
+            )
+            data = [d for d in cur]
+            data.reverse()
+
+            #setting up date
             current_date = min_date
             end_date = max_date
             delta = datetime.timedelta(days=1)
+
+            #reading the dropdown
             events = []
             group_by = request.form.get("group_by")
-            current_period = {"date": current_date if group_by == "day" else current_date.strftime(
+            current_period = {"date": current_date.strftime("%d/%m/%Y") if group_by == "day" else current_date.strftime(
                 "%Y/%m") if group_by == "month" else current_date.strftime("%Y"), "events": []}
 
             while current_date <= end_date:
 
                 next_date = current_date + delta
 
+                while data and is_date_in_period(data[-1][0], current_date, group_by):
+                    event = data[-1][1]
+                    current_period["events"].append(event)
+                    data.pop()
+
                 if group_by == 'day':
                     if current_date.day < next_date.day:
 
                         events.append(current_period)
-                        current_period = {"date": next_date, "events": []}
+                        current_period = {"date": next_date.strftime("%d/%m/%Y"), "events": []}
                         print("new day")
 
                 if group_by == 'month':

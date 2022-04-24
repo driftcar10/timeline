@@ -30,7 +30,13 @@
             {% for event in T_events %}
             <tr>
                     <td>{{event['date']}}</td>
-                    <td>{{event['description']}}</td>
+                    <td>
+                        <ul>
+                            {% for descr in event['events'] %}
+                                <li>{{descr}}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
             </tr>
             {% endfor %}
         </tbody>
