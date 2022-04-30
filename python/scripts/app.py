@@ -1,5 +1,6 @@
 from crypt import methods
 import os
+from pydoc import describe
 import mariadb
 import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -52,7 +53,7 @@ def index():
 
         #importing data from database
         cur.execute(
-            "SELECT date, description FROM events WHERE user_id = ? ORDER BY date",
+            "SELECT id, date, description FROM events WHERE user_id = ? ORDER BY date",
             (session['user_id'], )
         )
         data = [d for d in cur]
@@ -73,9 +74,10 @@ def index():
 
             next_date = current_date + delta
 
-            while data and is_date_in_period(data[-1][0], current_date, group_by):
-                event = data[-1][1]
-                current_period["events"].append(event)
+            while data and is_date_in_period(data[-1][1], current_date, group_by):
+                event_id = data[-1][0]
+                event_descr = data[-1][2]
+                current_period["events"].append({"id":event_id,"descr":event_descr})
                 data.pop()
 
             if group_by == 'day':
@@ -179,13 +181,34 @@ def add():
             return apology("must provide description", 400)
         print(request.form.get("date"))
         date = datetime.datetime.fromisoformat(request.form.get("date"))
-        cur.execute("INSERT INTO events (date, description, user_id) VALUES (?, ?, ?)",
-                    (request.form.get("date"),
-                     request.form.get("description"),
-                     session['user_id']))
-        conn.commit()
+        event_id = request.form.get("event_id")
+        if event_id:
+            cur.execute("UPDATE events SET date = ?, description = ? WHERE id = ?",
+                        (date,
+                        request.form.get("description"),
+                        event_id
+                        ))
+            conn.commit()
+        else:
+            cur.execute("INSERT INTO events (date, description, user_id) VALUES (?, ?, ?)",
+                        (date,
+                        request.form.get("description"),
+                        session['user_id']))
+            conn.commit()
         return redirect('/')
     else:
+        event_id = request.args.get("eventid")
+        print(event_id)
+        if event_id:
+            print("have id")
+            cur.execute("SELECT date, description FROM events WHERE id = ?", (event_id, ))
+            event = cur.fetchone()
+            if event:
+                event_t = {"date":event[0].strftime("%Y-%m-%d"), "descr":event[1], "event_id":event_id}
+                return render_template("add.html", event_t = event_t)
+            else:
+                return apology("No such event", 404)
+            
         return render_template("add.html")
 
 

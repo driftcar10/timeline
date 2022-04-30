@@ -27,13 +27,13 @@
             </tr>
         </thead>
         <tbody>
-            {% for event in T_events %}
+            {% for period in T_events %}
             <tr>
-                    <td>{{event['date']}}</td>
+                    <td>{{period['date']}}</td>
                     <td>
                         <ul>
-                            {% for descr in event['events'] %}
-                                <li>{{descr}}</li>
+                            {% for event in period['events'] %}
+                                <li><a href="/add?eventid={{event['id']}}">{{event['descr']}}</a></li>
                             {% endfor %}
                         </ul>
                     </td>

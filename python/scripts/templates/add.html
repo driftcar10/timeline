@@ -9,11 +9,14 @@
 
 <form action="/add" method="post">
 	<div>
-		<input autocomplete="off" autofocus class="form-control" name="date" placeholder="date" type="date">
+		<input autocomplete="off" autofocus class="form-control" name="date" placeholder="date" type="date" value="{{event_t['date'] if event_t else ''}}">
 	</div>
     <div>
-		<input autocomplete="off" class="form-control" name="description" placeholder="what happened" type="text">
+		<input autocomplete="off" class="form-control" name="description" placeholder="what happened" type="text" value="{{event_t['descr'] if event_t else ''}}">
 	</div>
+
+	<input type="hidden" name="event_id" value="{{event_t['event_id'] if event_t else ''}}">
+
 	<button type="submit"> Add </button>
 </form>
 {% endblock %}
