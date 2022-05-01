@@ -216,5 +216,9 @@ def add():
 def about_us():
     return render_template('about_us.html')
 
+@app.route('/indev', methods=['GET'])
+def indev():
+    return render_template('indev.html')
+
 
 app.run(host='0.0.0.0', port=5000)

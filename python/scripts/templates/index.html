@@ -33,7 +33,7 @@
                     <td>
                         <ul>
                             {% for event in period['events'] %}
-                                <li><a href="/add?eventid={{event['id']}}">{{event['descr']}}</a></li>
+                                <li><a href="/add?eventid={{event['id']}}">{{event['descr']}} <br> <a href="/indev">delete</a></li>
                             {% endfor %}
                         </ul>
                     </td>
