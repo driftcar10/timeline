@@ -1,0 +1,21 @@
+{% extends "template.html" %}
+
+{% block title %}
+    delete
+{% endblock %}
+
+{% block main %}
+<h3>Are you sure you want to delete this event?</h3>
+<form action="/delete" method="post">
+    <input type="hidden" name="no" value="No">
+    <button type="submit">No</button>
+</form>
+
+
+<form action="/delete" method="post">
+    <input type="hidden" name="yes" value="Yes">
+    <input type="hidden" name="event_id" value="{{id}}">
+    <button type="submit">Yes</button>
+</form>
+
+{% endblock %}

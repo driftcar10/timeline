@@ -220,5 +220,27 @@ def about_us():
 def indev():
     return render_template('indev.html')
 
+@app.route('/delete', methods=['GET', 'POST'])
+@login_required
+def delete():
+    if request.method == "POST":
+        if request.form.get('no') == 'No':
+            return redirect("/")
+        else:
+            event_id = request.form.get("event_id")
+            if event_id:
+                cur.execute("DELETE FROM events WHERE id = ?",
+                (event_id, )
+                )
+                print("deleted")
+                return redirect("/")
+    else:
+        event_id = request.args.get("eventid")
+        print(event_id)
+        if event_id:
+            print("have delete id")
+            id = event_id
+            return render_template('delete.html', id = id)
+        return apology("No such event", 404)
 
 app.run(host='0.0.0.0', port=5000)
