@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from tempfile import mkdtemp
 from flask_session import Session
 from helpers import login_required, apology, is_date_in_period
-from flask import Flask, redirect, render_template, request, session
+from flask import Flask, current_app, redirect, render_template, request, session
 print("Hello from Container!")
 
 app = Flask(__name__)
@@ -21,21 +21,28 @@ user = os.environ.get('MYSQL_USER')
 password = os.environ.get('MYSQL_PASSWORD')
 database = os.environ.get('MYSQL_DATABASE')
 
-conn = mariadb.connect(
-    host="db",
-    port=3306,
-    user=user,
-    password=password,
-    database=database
-)
+def get_db_conn():
+    if not hasattr(current_app,'db_conn') or not current_app.db_conn:
+        current_app.db_conn =  mariadb.connect(
+            host="db",
+            port=3306,
+            user=user,
+            password=password,
+            database=database
+        )
+    return current_app.db_conn
 
-cur = conn.cursor()
+@app.teardown_appcontext
+def close_db_conn(error):
+    if hasattr(current_app, 'db_conn'):
+        current_app.db_conn.close()
+        current_app.db_conn = None
 
 
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    #if request.method == 'POST':
+    cur = get_db_conn().cursor()
     cur.execute("SELECT MIN(date) FROM events WHERE user_id = ?",
                 (session['user_id'], ))
     print(cur.rowcount, session['user_id'])
@@ -48,7 +55,7 @@ def index():
             "SELECT MAX(date) FROM events WHERE user_id = ?", (session['user_id'], ))
         max_date = cur.fetchone()[0]
         print('am i working')
-
+        # raise Exception("moooo")
         # iterating over dates
 
         #importing data from database
@@ -105,7 +112,7 @@ def index():
 
             current_date += delta
         events.append(current_period)
-
+    # print("going to render!")
     return render_template('index.html', T_events=events)
     
 
@@ -113,7 +120,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     session.clear()
-
+    cur = get_db_conn().cursor()
     if request.method == 'POST':
 
         if not request.form.get("username"):
@@ -145,6 +152,7 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    cur = get_db_conn().cursor()
     if request.method == 'POST':
         if not request.form.get("username"):
             return apology("must provide username", 400)
@@ -162,7 +170,7 @@ def register():
             print(123)
             cur.execute("INSERT INTO users (name, password_hash, mail) VALUES (?, ?, ?)",
                         (request.form.get("username"), password_hash, request.form.get("email")))
-            conn.commit()
+            get_db_conn().commit()
         except ValueError:
             return apology(f"There's another guy with the same name: {request.form.get('username')}", 400)
         return redirect("/login")
@@ -173,6 +181,7 @@ def register():
 @app.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
+    cur = get_db_conn().cursor()
     if request.method == 'POST':
         if not request.form.get("date"):
             return apology("must provide date", 400)
@@ -188,13 +197,13 @@ def add():
                         request.form.get("description"),
                         event_id
                         ))
-            conn.commit()
+            get_db_conn().commit()
         else:
             cur.execute("INSERT INTO events (date, description, user_id) VALUES (?, ?, ?)",
                         (date,
                         request.form.get("description"),
                         session['user_id']))
-            conn.commit()
+            get_db_conn().commit()
         return redirect('/')
     else:
         event_id = request.args.get("eventid")
@@ -223,6 +232,7 @@ def indev():
 @app.route('/delete', methods=['GET', 'POST'])
 @login_required
 def delete():
+    cur = get_db_conn().cursor()
     if request.method == "POST":
         if request.form.get('no') == 'No':
             return redirect("/")
@@ -232,6 +242,7 @@ def delete():
                 cur.execute("DELETE FROM events WHERE id = ?",
                 (event_id, )
                 )
+                get_db_conn().commit()
                 print("deleted")
                 return redirect("/")
     else:
