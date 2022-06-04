@@ -8,6 +8,8 @@ from tempfile import mkdtemp
 from flask_session import Session
 from helpers import login_required, apology, is_date_in_period
 from flask import Flask, current_app, redirect, render_template, request, session
+from flask_bootstrap import Bootstrap
+
 print("Hello from Container!")
 
 app = Flask(__name__)
@@ -16,6 +18,7 @@ app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+Bootstrap(app)
 
 user = os.environ.get('MYSQL_USER')
 password = os.environ.get('MYSQL_PASSWORD')
@@ -35,7 +38,8 @@ def get_db_conn():
 @app.teardown_appcontext
 def close_db_conn(error):
     if hasattr(current_app, 'db_conn'):
-        current_app.db_conn.close()
+        if current_app.db_conn is not None:
+            current_app.db_conn.close()
         current_app.db_conn = None
 
 

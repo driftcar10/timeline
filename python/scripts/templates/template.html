@@ -1,25 +1,13 @@
-<!DOCTYPE html>
+{% extends "bootstrap/base.html" %}
 
-<html lang="en">
+{%block head%}
+    {{super()}}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/static/floppy-disk.ico" rel="icon">
+    <title>Timeline: {% block title %}{% endblock %}</title>
+{%endblock%}
 
-    <head>
-        <link href="/static/floppy-disk.ico" rel="icon">
-        <title>Timeline: {% block title %}{% endblock %}</title>
-
-    </head>
-
-    <body>
-        <a href="/about_us">about us</a>
-        <main>
-            {% block main %}{% endblock %}
-        </main>
-        
-    </body>
-
-    <footer>
-        <h4>This is an open sorce programe.</h4>
-    </footer>
-
+{% block navbar %}
     <div>
         {% if session.user_id %}
         <ul class="navbar-nav mr-auto mt-2">
@@ -33,3 +21,18 @@
         {% endif %}
         
     </div>
+{%endblock%}
+
+{%block content%}
+    {{super()}}
+    <main>
+        {% block main %}{% endblock %}
+    </main>
+    {%block footer%}
+        <footer>
+            <a href="/about_us">about us</a>
+            <h4>This is an open sorce programe.</h4>
+        </footer>
+    {%endblock%}
+{%endblock%}
+
