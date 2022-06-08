@@ -1,17 +1,21 @@
 {% extends "template.html" %}
 
 {% block title %}
-    Log In
+Log In
 {% endblock %}
 
 {% block main %}
-<form action="/login" method="post">
-	<div>
-		<input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
-	</div>
-	<div>
-		<input autocomplete="off" class="form-control" name="password" placeholder="Password" type="password">
-	</div>
-	<button type="submit">Log In</button>
-</form>
+<body class="text-center">
+	<form class="form-signin" action="/login" method="post">
+		<h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+
+		<label for="usr" class="sr-only">Email address</label>
+		<input type="text" id="usr" class="form-control" placeholder="Username" name="username" required autofocus autocomplete="off">
+
+		<label for="inputPassword" class="sr-only">Password</label>
+		<input type="password" id="inputPassword" class="form-control" placeholder="Password" name="password" required autocomplete="off">
+
+		<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+	</form>
+</body>
 {% endblock %}

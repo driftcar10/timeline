@@ -19,11 +19,11 @@
 
 
 <br>
-    <table>
+    <table class="table table-striped">
         <thead>
             <tr>
-                <th>date</th>
-                <th>discription</th>
+                <th scope="col">date</th>
+                <th scope="col">discription</th>
             </tr>
         </thead>
         <tbody>
@@ -33,7 +33,7 @@
                     <td>
                         <ul>
                             {% for event in period['events'] %}
-                                <li><a href="/add?eventid={{event['id']}}">{{event['descr']}} <br> <a href="/delete?eventid={{event['id']}}">delete</a></li>
+                                <li><a href="/add?eventid={{event['id']}}">{{event['descr']}}</li>
                             {% endfor %}
                         </ul>
                     </td>

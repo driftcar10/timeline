@@ -17,6 +17,12 @@
 
 	<input type="hidden" name="event_id" value="{{event_t['event_id'] if event_t else ''}}">
 
+	{% if event_t and event_t['event_id'] %}
+		<a href="/delete?eventid={{event_t['event_id']}}">delete</a>
+		<br>
+		<br>
+	{% endif %}
+
 	<button type="submit"> Add </button>
 </form>
 {% endblock %}

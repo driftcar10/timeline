@@ -5,19 +5,23 @@
 {% endblock %}
 
 {% block main %}
-<form action="/register" method="post">
-	<div>
-		<input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
-	</div>
-	<div>
-		<input autocomplete="off" class="form-control" name="email" placeholder="email" type="text">
-	</div>
-	<div>
-		<input autocomplete="off" class="form-control" name="password" placeholder="Password" type="password">
-	</div>
-    <div>
-		<input autocomplete="off" class="form-control" name="confirmation" placeholder="confirmation" type="password">
-	</div>
-	<button type="submit"> Register </button>
-</form>
+<body class="text-center">
+	<form class="form-signin" action="/register" method="post">
+		<h1 class="h3 mb-3 font-weight-normal">Register</h1>
+
+		<label for="usr" class="sr-only">Username</label>
+		<input type="text" id="usr" class="form-control" name="username" placeholder="Username" required autofocus autocomplete="off">
+
+		<label for="email" class="sr-only">Email</label>
+		<input type="text" id="email" class="form-control" name="email" placeholder="Email" required autocomplete="off">
+
+		<label for="password" class="sr-only">Password</label>
+		<input type="password" id="password" class="form-control" name="password" placeholder="password" required autocomplete="off">
+
+		<label for="confir" class="sr-only">Confirmation</label>
+		<input type="password" id="confir" class="form-control" name="confirmation" placeholder="confirmation" required autocomplete="off">
+
+		<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+	</form>
+</body>
 {% endblock %}
