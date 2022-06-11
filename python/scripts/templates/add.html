@@ -23,6 +23,6 @@
 		<br>
 	{% endif %}
 
-	<button type="submit"> Add </button>
+	<button type="submit">{% if event_t and event_t['event_id'] %} Save {% else %} Add {%endif%} </button>
 </form>
 {% endblock %}
