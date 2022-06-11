@@ -6,9 +6,12 @@ import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
 from tempfile import mkdtemp
 from flask_session import Session
-from helpers import login_required, apology, is_date_in_period
+from helpers import login_required, apology, fill_timeline
 from flask import Flask, current_app, redirect, render_template, request, session
 from flask_bootstrap import Bootstrap
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 print("Hello from Container!")
 
@@ -54,12 +57,10 @@ def index():
     print(min_date)
     events = []
     if min_date:
-        #min_date = min_date[0]
         cur.execute(
             "SELECT MAX(date) FROM events WHERE user_id = ?", (session['user_id'], ))
         max_date = cur.fetchone()[0]
         print('am i working')
-        # raise Exception("moooo")
         # iterating over dates
 
         #importing data from database
@@ -78,44 +79,12 @@ def index():
         #reading the dropdown
 
         group_by = "month" if request.method == "GET" else request.form.get("group_by")
+
         current_period = {"date": current_date.strftime("%d/%m/%Y") if group_by == "day" else current_date.strftime(
             "%Y/%m") if group_by == "month" else current_date.strftime("%Y"), "events": []}
 
-        while current_date <= end_date:
+        events = fill_timeline(current_date, end_date, delta, group_by, current_period, data)
 
-            next_date = current_date + delta
-
-            while data and is_date_in_period(data[-1][1], current_date, group_by):
-                event_id = data[-1][0]
-                event_descr = data[-1][2]
-                current_period["events"].append({"id":event_id,"descr":event_descr})
-                data.pop()
-
-            if group_by == 'day':
-                if current_date.day < next_date.day:
-
-                    events.append(current_period)
-                    current_period = {"date": next_date.strftime("%d/%m/%Y"), "events": []}
-                    print("new day")
-
-            if group_by == 'month':
-                if current_date.month < next_date.month:
-
-                    events.append(current_period)
-                    current_period = {
-                        "date": next_date.strftime("%Y/%m"), "events": []}
-                    print("new month")
-
-            if group_by == 'year':
-                if current_date.year < next_date.year:
-
-                    events.append(current_period)
-                    current_period = {
-                        "date": next_date.strftime("%Y"), "events": []}
-                    print("new year")
-
-            current_date += delta
-        events.append(current_period)
     # print("going to render!")
     return render_template('index.html', T_events=events)
     
@@ -135,8 +104,11 @@ def login():
 
         cur.execute("SELECT password_hash, id FROM users WHERE name = ?",
                     (request.form.get("username"), ))
-        password, user_id = cur.fetchone()
-
+        user_row = cur.fetchone()
+        if not user_row:
+            return apology("invalid username and/or password")
+        
+        password, user_id = user_row
         print(password)
         print(user_id)
 
