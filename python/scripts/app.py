@@ -1,6 +1,4 @@
-from crypt import methods
 import os
-from pydoc import describe
 import mariadb
 import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -13,23 +11,30 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-print("Hello from Container!")
+logger = logging.getLogger(__name__)
+
+logger.debug("container started")
 
 app = Flask(__name__)
 
+# configuring session
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 Bootstrap(app)
 
+# getting db info from the container
 user = os.environ.get('MYSQL_USER')
 password = os.environ.get('MYSQL_PASSWORD')
 database = os.environ.get('MYSQL_DATABASE')
 
+# connecting to db
+
+
 def get_db_conn():
-    if not hasattr(current_app,'db_conn') or not current_app.db_conn:
-        current_app.db_conn =  mariadb.connect(
+    if not hasattr(current_app, 'db_conn') or not current_app.db_conn:
+        current_app.db_conn = mariadb.connect(
             host="db",
             port=3306,
             user=user,
@@ -37,6 +42,9 @@ def get_db_conn():
             database=database
         )
     return current_app.db_conn
+
+# func for closing connection to db
+
 
 @app.teardown_appcontext
 def close_db_conn(error):
@@ -49,21 +57,21 @@ def close_db_conn(error):
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
+    # getting cursor
     cur = get_db_conn().cursor()
+
+    # getting min date from db
     cur.execute("SELECT MIN(date) FROM events WHERE user_id = ?",
                 (session['user_id'], ))
-    print(cur.rowcount, session['user_id'])
     min_date = cur.fetchone()[0]
-    print(min_date)
+
     events = []
     if min_date:
         cur.execute(
             "SELECT MAX(date) FROM events WHERE user_id = ?", (session['user_id'], ))
         max_date = cur.fetchone()[0]
-        print('am i working')
-        # iterating over dates
 
-        #importing data from database
+        # importing data from database
         cur.execute(
             "SELECT id, date, description FROM events WHERE user_id = ? ORDER BY date",
             (session['user_id'], )
@@ -71,31 +79,34 @@ def index():
         data = [d for d in cur]
         data.reverse()
 
-        #setting up date
+        # setting up date
         current_date = min_date
         end_date = max_date
         delta = datetime.timedelta(days=1)
 
-        #reading the dropdown
+        # reading the dropdown
 
-        group_by = "month" if request.method == "GET" else request.form.get("group_by")
+        group_by = "month" if request.method == "GET" else request.form.get(
+            "group_by")
 
         current_period = {"date": current_date.strftime("%d/%m/%Y") if group_by == "day" else current_date.strftime(
             "%Y/%m") if group_by == "month" else current_date.strftime("%Y"), "events": []}
 
-        events = fill_timeline(current_date, end_date, delta, group_by, current_period, data)
+        # getting sorted events
+        events = fill_timeline(current_date, end_date,
+                               delta, group_by, current_period, data)
 
-    # print("going to render!")
+        logger.debug("Timeline was filled in successfully")
     return render_template('index.html', T_events=events)
-    
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # clearing the session
     session.clear()
     cur = get_db_conn().cursor()
     if request.method == 'POST':
-
+        # checking for corner cases
         if not request.form.get("username"):
             return apology("must provide username", 403)
 
@@ -107,10 +118,8 @@ def login():
         user_row = cur.fetchone()
         if not user_row:
             return apology("invalid username and/or password")
-        
+
         password, user_id = user_row
-        print(password)
-        print(user_id)
 
         if not password:
             return apology("invalid username and/or password", 403)
@@ -120,16 +129,19 @@ def login():
 
         session["user_id"] = user_id
 
+        logger.debug("User loged in successfully")
         return redirect("/")
-        # return render_template('indev.html')
     else:
         return render_template('login.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # getting cursor
     cur = get_db_conn().cursor()
     if request.method == 'POST':
+        # checking for corner cases
+
         if not request.form.get("username"):
             return apology("must provide username", 400)
 
@@ -142,13 +154,16 @@ def register():
         if request.form.get("password") != request.form.get("confirmation"):
             return apology("passwords must match", 400)
         password_hash = generate_password_hash(request.form.get("password"))
+        # inserting into users table
+        # TODO: fix critical error (hackers can know that the account is existing)
         try:
-            print(123)
             cur.execute("INSERT INTO users (name, password_hash, mail) VALUES (?, ?, ?)",
                         (request.form.get("username"), password_hash, request.form.get("email")))
             get_db_conn().commit()
         except ValueError:
             return apology(f"There's another guy with the same name: {request.form.get('username')}", 400)
+
+        logger.debug("Account was added successfully")
         return redirect("/login")
     else:
         return render_template('register.html')
@@ -157,77 +172,102 @@ def register():
 @app.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
+    # getting cursor
     cur = get_db_conn().cursor()
     if request.method == 'POST':
+        # checking for corner cases
         if not request.form.get("date"):
             return apology("must provide date", 400)
 
         elif not request.form.get("description"):
             return apology("must provide description", 400)
-        print(request.form.get("date"))
+
+        # convertitng date to datetime
         date = datetime.datetime.fromisoformat(request.form.get("date"))
+
         event_id = request.form.get("event_id")
+
+        # deciding to UPDATE or INSERT an event
         if event_id:
             cur.execute("UPDATE events SET date = ?, description = ? WHERE id = ?",
                         (date,
-                        request.form.get("description"),
-                        event_id
-                        ))
+                         request.form.get("description"),
+                         event_id
+                         ))
             get_db_conn().commit()
+
+            logger.debug("Event was updated successfully")
         else:
             cur.execute("INSERT INTO events (date, description, user_id) VALUES (?, ?, ?)",
                         (date,
-                        request.form.get("description"),
-                        session['user_id']))
+                         request.form.get("description"),
+                         session['user_id']))
             get_db_conn().commit()
+
+            logger.debug("Event was inserted successfully")
         return redirect('/')
     else:
+        # filling in form if event exists
+
         event_id = request.args.get("eventid")
-        print(event_id)
+
         if event_id:
-            print("have id")
-            cur.execute("SELECT date, description FROM events WHERE id = ?", (event_id, ))
+            cur.execute(
+                "SELECT date, description FROM events WHERE id = ?", (event_id, ))
             event = cur.fetchone()
             if event:
-                event_t = {"date":event[0].strftime("%Y-%m-%d"), "descr":event[1], "event_id":event_id}
-                return render_template("add.html", event_t = event_t)
+                event_t = {"date": event[0].strftime(
+                    "%Y-%m-%d"), "descr": event[1], "event_id": event_id}
+                
+                logger.debug("Event was filled successfully")
+                return render_template("add.html", event_t=event_t)
             else:
                 return apology("No such event", 404)
-            
+
         return render_template("add.html")
+
+# a page about the project
 
 
 @app.route('/about_us', methods=['GET'])
 def about_us():
     return render_template('about_us.html')
 
+# a filler for not created pages
+
+
 @app.route('/indev', methods=['GET'])
 def indev():
     return render_template('indev.html')
 
+
 @app.route('/delete', methods=['GET', 'POST'])
 @login_required
 def delete():
+    # getting cursor
     cur = get_db_conn().cursor()
+
     if request.method == "POST":
+
         if request.form.get('no') == 'No':
             return redirect("/")
         else:
+            # deleting
             event_id = request.form.get("event_id")
             if event_id:
                 cur.execute("DELETE FROM events WHERE id = ?",
-                (event_id, )
-                )
+                            (event_id, )
+                            )
                 get_db_conn().commit()
-                print("deleted")
+                logger.debug("Event was deleted successfully")
                 return redirect("/")
     else:
+        # getting what to delete
         event_id = request.args.get("eventid")
-        print(event_id)
         if event_id:
-            print("have delete id")
             id = event_id
-            return render_template('delete.html', id = id)
+            return render_template('delete.html', id=id)
         return apology("No such event", 404)
+
 
 app.run(host='0.0.0.0', port=5000)
