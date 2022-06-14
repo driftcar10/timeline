@@ -155,7 +155,6 @@ def register():
             return apology("passwords must match", 400)
         password_hash = generate_password_hash(request.form.get("password"))
         # inserting into users table
-        # TODO: fix critical error (hackers can know that the account is existing)
         try:
             cur.execute("INSERT INTO users (name, password_hash, mail) VALUES (?, ?, ?)",
                         (request.form.get("username"), password_hash, request.form.get("email")))
@@ -227,15 +226,11 @@ def add():
         return render_template("add.html")
 
 # a page about the project
-
-
 @app.route('/about_us', methods=['GET'])
 def about_us():
     return render_template('about_us.html')
 
 # a filler for not created pages
-
-
 @app.route('/indev', methods=['GET'])
 def indev():
     return render_template('indev.html')
