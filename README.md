@@ -1,37 +1,27 @@
 # TIMELINE:
 The goal of the project is to make an open source, interatcive timeline of user's life.
+It allows to represnt user's time line in different scales - days, months, years and
+visualisate time distance
 
 ## Getting Started:
-You can download the source code on github via my profile (search: driftcar10) or a link: 
+The program is packaged as set of docker containers, orchestrated by docker compose.
 
 ### Installing:
-Source requires:
-    1. Docker Desktop
-    2. An editor
-    3. Python 3.10
-    4. Ability to divide proccessor, RAM etc. (Linux only)
-    5. Browser
-
-### Usage:
-The main idea, as I said earlier, is in storing memories in chronolgical order.
-
-### Testing:
-I am sorry, no tests so far :) (I tested manualy by using the serivce).
-
-## Starting Program:
-Just go into /workspace/python/scripts# in the container and type: 
-
-```
-flask run
-```
+1. Clone the repositry
+2. From the top level directory start docker compose ```docker-compose start```
+3. Head your browser to ```http://127.0.0.1:5000```
+4. Register your user
+5. Enjoy
 
 ## Known Issues:
 Method Not Allowed error: Happens when changing code, after you've filterd the table, and reloading the page using the button. 
     (GET method of index gives group_by info to login)
 
 ## Contributing:
+Contributions are welcome!
 
 ## Licence:
+BSD 3 clause
 
 ## Authors:
-    driftcar10
+driftcar10
